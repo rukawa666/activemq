@@ -1,17 +1,12 @@
 package com.rukawa.activemq.p2p;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import javax.jms.*;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class Consumer {
 	public final String SELECTOR_0 = "age > 25";
@@ -78,6 +73,29 @@ public class Consumer {
 					System.out.println(ret.toString());
 					System.out.println(ret.getString("name"));
 					System.out.println(ret.getString("age"));
+				}
+
+				if(message instanceof BytesMessage) {
+					BytesMessage bytesMessage = (BytesMessage) message;
+					/*String utf = bytesMessage.readUTF();
+					System.out.println(utf);*/
+
+					FileOutputStream out = null;
+					try {
+						out = new FileOutputStream("D:/mq/dev");
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					}
+
+					byte[] by = new byte[1024];
+					int len = 0;
+					try {
+						while ((len = bytesMessage.readBytes(by)) != -1) {
+							out.write(by, 0, len);
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
 			} catch (JMSException e) {
 				e.printStackTrace();

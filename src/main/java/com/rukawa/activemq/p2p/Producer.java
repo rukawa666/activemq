@@ -1,14 +1,6 @@
 package com.rukawa.activemq.p2p;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
+import javax.jms.*;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 
@@ -74,11 +66,16 @@ public class Producer {
 			msg4.setString("age", "26");
 			msg4.setStringProperty("color", "blue");
 			msg4.setIntProperty("sal", 2000);
-
+			// 当ttl到期，进入死信队列，保证一些有时效性的这种消息
+			producer.setTimeToLive(1000);
 			this.producer.send(destination, msg1, DeliveryMode.NON_PERSISTENT, 2, 1000*60*10L);
 			this.producer.send(destination, msg2, DeliveryMode.NON_PERSISTENT, 3, 1000*60*10L);
 			this.producer.send(destination, msg3, DeliveryMode.NON_PERSISTENT, 6, 1000*60*10L);
 			this.producer.send(destination, msg4, DeliveryMode.NON_PERSISTENT, 9, 1000*60*10L);
+
+			BytesMessage bytesMessage = session.createBytesMessage();
+			bytesMessage.writeUTF("hi~!");
+			producer.send(destination, bytesMessage);
 			if(null != session) {
 				session.close();
 			}
